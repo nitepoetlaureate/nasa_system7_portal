@@ -1,0 +1,22 @@
+# Dependencies
+/node_modules
+/client/node_modules
+/server/node_modules
+
+# Build files
+/client/build
+/coverage
+
+# Environment files
+.env
+/server/.env
+/client/.env
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.claude/.DS_Store
+/.claude
+.DS_Store
+*.zip

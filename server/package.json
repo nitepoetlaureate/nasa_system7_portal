@@ -1,0 +1,17 @@
+{
+  "name": "nasa-system7-server",
+  "version": "1.0.0",
+  "description": "Backend server for the NASA System 7 Portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "db:init": "node -e \"require('./db.js').initDb()\""
+  },
+  "dependencies": {
+    "axios": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "pg": "^8.11.3"
+  }
+}
