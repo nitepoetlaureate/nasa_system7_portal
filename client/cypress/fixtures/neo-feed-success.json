@@ -1,0 +1,108 @@
+{
+  "links": {
+    "next": null,
+    "prev": null,
+    "self": "http://api.nasa.gov/neo/rest/v1/feed"
+  },
+  "element_count": 3,
+  "near_earth_objects": {
+    "2024-01-01": [
+      {
+        "id": "12345",
+        "neo_reference_id": "12345",
+        "name": "(12345) Test Asteroid 1",
+        "name_limited": "(12345) 2024 AB",
+        "designation": "2024 AB",
+        "nasa_jpl_url": "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=12345",
+        "absolute_magnitude_h": 18.5,
+        "estimated_diameter": {
+          "kilometers": {
+            "estimated_diameter_min": 0.089,
+            "estimated_diameter_max": 0.199
+          },
+          "meters": {
+            "estimated_diameter_min": 89.4,
+            "estimated_diameter_max": 199.2
+          },
+          "miles": {
+            "estimated_diameter_min": 0.056,
+            "estimated_diameter_max": 0.124
+          },
+          "feet": {
+            "estimated_diameter_min": 293.3,
+            "estimated_diameter_max": 653.4
+          }
+        },
+        "is_potentially_hazardous_asteroid": false,
+        "close_approach_data": [
+          {
+            "close_approach_date": "2024-01-01",
+            "close_approach_date_full": "2024-Jan-01 00:00",
+            "epoch_date_close_approach": 1704067200000,
+            "relative_velocity": {
+              "kilometers_per_second": "8.52",
+              "kilometers_per_hour": "30671.8",
+              "miles_per_hour": "19058.1"
+            },
+            "miss_distance": {
+              "astronomical": "0.0475",
+              "lunar": "18.48",
+              "kilometers": "7106265",
+              "miles": "4415610"
+            },
+            "orbiting_body": "Earth"
+          }
+        ],
+        "is_sentry_object": false
+      },
+      {
+        "id": "67890",
+        "neo_reference_id": "67890",
+        "name": "(67890) Test Asteroid 2",
+        "name_limited": "(67890) 2024 CD",
+        "designation": "2024 CD",
+        "nasa_jpl_url": "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=67890",
+        "absolute_magnitude_h": 16.2,
+        "estimated_diameter": {
+          "kilometers": {
+            "estimated_diameter_min": 1.234,
+            "estimated_diameter_max": 2.756
+          },
+          "meters": {
+            "estimated_diameter_min": 1234.2,
+            "estimated_diameter_max": 2756.1
+          },
+          "miles": {
+            "estimated_diameter_min": 0.767,
+            "estimated_diameter_max": 1.713
+          },
+          "feet": {
+            "estimated_diameter_min": 4050.1,
+            "estimated_diameter_max": 9048.7
+          }
+        },
+        "is_potentially_hazardous_asteroid": true,
+        "close_approach_data": [
+          {
+            "close_approach_date": "2024-01-01",
+            "close_approach_date_full": "2024-Jan-01 12:00",
+            "epoch_date_close_approach": 1704110400000,
+            "relative_velocity": {
+              "kilometers_per_second": "15.67",
+              "kilometers_per_hour": "56412.3",
+              "miles_per_hour": "35049.2"
+            },
+            "miss_distance": {
+              "astronomical": "0.0234",
+              "lunar": "9.11",
+              "kilometers": "3501267",
+              "miles": "2175489"
+            },
+            "orbiting_body": "Earth"
+          }
+        ],
+        "is_sentry_object": false
+      }
+    ]
+  }
+}

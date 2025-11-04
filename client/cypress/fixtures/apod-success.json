@@ -1,0 +1,10 @@
+{
+  "date": "2024-01-01",
+  "title": "Test Astronomy Picture of the Day",
+  "explanation": "This is a test APOD image showing the beauty of our universe. The image captures a stunning view of distant galaxies and nebulae, showcasing the vastness and complexity of space.",
+  "url": "https://apod.nasa.gov/apod/image/2401/test_galaxy.jpg",
+  "hdurl": "https://apod.nasa.gov/apod/image/2401/test_galaxy_hd.jpg",
+  "media_type": "image",
+  "service_version": "v1",
+  "copyright": "Test Astrophotographer"
+}

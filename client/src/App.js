@@ -4,7 +4,7 @@ import MenuBar from './components/system7/MenuBar';
 
 function App() {
   return (
-    <div className="w-screen h-screen overflow-hidden bg-s7-pattern">
+    <div className="w-screen h-screen overflow-hidden bg-s7-pattern" data-testid="desktop-container">
       <MenuBar />
       <Desktop />
     </div>

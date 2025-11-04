@@ -1,0 +1,24 @@
+{
+  "title": "Featured NASA Resource: Mars Perseverance Rover",
+  "description": "Explore the latest discoveries and images from NASA's Perseverance rover as it searches for signs of ancient life on Mars. This collection includes high-resolution images, 3D models, and scientific data from the Jezero Crater exploration.",
+  "media_type": "image",
+  "media_url": "https://images-assets.nasa.gov/image/PIA24771/PIA24771~orig.jpg",
+  "thumbnail_url": "https://images-assets.nasa.gov/image/PIA24771/PIA24771~thumb.jpg",
+  "location": "Jezero Crater, Mars",
+  "keywords": [
+    "Mars",
+    "Perseverance Rover",
+    "Jezero Crater",
+    "Mars 2020",
+    "Space Exploration",
+    "NASA",
+    "Planetary Science"
+  ],
+  "date_created": "2024-01-01T00:00:00Z",
+  "creator": "NASA/JPL-Caltech",
+  "center": "Jet Propulsion Laboratory",
+  "date_updated": "2024-01-01T12:00:00Z",
+  "description_508": "NASA's Perseverance rover captured this stunning view of the Martian landscape in Jezero Crater.",
+  "secondary_creator": "Mars 2020 Mission Team",
+  "keywords_string": "Mars, Perseverance Rover, Jezero Crater, Mars 2020, Space Exploration, NASA, Planetary Science"
+}
