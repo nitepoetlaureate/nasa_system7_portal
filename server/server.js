@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const apiProxyRouter = require('./routes/apiProxy');
 const { router: resourceNavigatorRouter, fetchFeaturedItem } = require('./routes/resourceNavigator');
+const apodEnhancedRouter = require('./routes/apodEnhanced');
 const { performanceMiddleware, responseTimeMiddleware } = require('./middleware/performance');
 
 const app = express();
@@ -64,6 +65,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // API routes
 app.use('/api/nasa', apiProxyRouter);
 app.use('/api/resources', resourceNavigatorRouter);
+app.use('/api/apod', apodEnhancedRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
