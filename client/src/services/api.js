@@ -35,10 +35,18 @@ export const searchApods = (query, limit = 20, dateRange) =>
 export const getApodStatistics = (period = 'year') =>
     apiClient.get(`/apod/statistics?period=${period}`);
 
-// Resource Navigator Library APIs
+// Enhanced Resource Navigator APIs
 export const getSavedItems = () => apiClient.get('/resources/saved-items');
-export const saveItem = (item) => apiClient.post('/resources/save-item', item);
-export const deleteItem = (id) => apiClient.delete(`/resources/delete-item/${id}`);
+export const saveItem = (item) => apiClient.post('/resources/save', item);
+export const deleteItem = (id) => apiClient.delete(`/resources/save/${id}`);
+export const rateItem = (id, rating) => apiClient.post(`/resources/rate/${id}`, { rating });
 export const getSearchHistory = () => apiClient.get('/resources/search-history');
-export const getFeaturedItem = () => apiClient.get('/resources/featured-item');
+export const getFeaturedItem = () => apiClient.get('/resources/featured');
+export const getSearchSuggestions = (query) => apiClient.get(`/resources/suggestions?query=${query}`);
+export const executeEnhancedSearch = (params) => apiClient.post('/resources/search', params);
+export const getRecommendations = (query) => apiClient.get(`/resources/recommendations?query=${query}`);
+export const getTrendingItems = () => apiClient.get('/resources/trending');
+export const getTutorials = () => apiClient.get('/resources/tutorials');
+
+// Legacy Resource Navigator APIs
 export const executeLiveSearch = (query) => apiClient.post('/resources/live-search', { query });
