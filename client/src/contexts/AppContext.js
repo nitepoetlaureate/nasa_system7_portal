@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useCallback } from 'react';
 import ApodApp from '../components/apps/ApodApp';
-import NeoWsApp from '../components/apps/NeoWsApp';
+import NeoWsEnhancedApp from '../components/apps/NeoWsEnhancedApp';
 import ResourceNavigatorApp from '../components/apps/ResourceNavigatorApp';
 import ImageViewerApp from '../components/apps/ImageViewerApp';
 
@@ -8,7 +8,7 @@ const AppContext = createContext();
 
 const initialApps = {
   'apod': { id: 'apod', name: 'Picture of the Day', component: ApodApp, isOpen: false, zIndex: 10, pos: { x: 50, y: 50 } },
-  'neows': { id: 'neows', name: 'Near Earth Objects', component: NeoWsApp, isOpen: false, zIndex: 10, pos: { x: 100, y: 100 } },
+  'neows': { id: 'neows', name: 'NEO Command Center', component: NeoWsEnhancedApp, isOpen: false, zIndex: 10, pos: { x: 100, y: 100 } },
   'resources': { id: 'resources', name: 'Resource Navigator', component: ResourceNavigatorApp, isOpen: false, zIndex: 10, pos: { x: 150, y: 150 } },
   'imageViewer': { id: 'imageViewer', name: 'HD Image Viewer', component: ImageViewerApp, isOpen: false, zIndex: 10, pos: { x: 200, y: 200 }, data: null },
 };

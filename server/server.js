@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const apiProxyRouter = require('./routes/apiProxy');
 const { router: resourceNavigatorRouter, fetchFeaturedItem } = require('./routes/resourceNavigator');
 const apodEnhancedRouter = require('./routes/apodEnhanced');
+const neoEnhancedRouter = require('./routes/neoEnhanced');
 const { performanceMiddleware, responseTimeMiddleware } = require('./middleware/performance');
 
 const app = express();
@@ -66,6 +67,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/nasa', apiProxyRouter);
 app.use('/api/resources', resourceNavigatorRouter);
 app.use('/api/apod', apodEnhancedRouter);
+app.use('/api/neo', neoEnhancedRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
