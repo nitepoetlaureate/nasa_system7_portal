@@ -1,0 +1,26 @@
+# NASA System 7 Portal - Grafana Prometheus Datasource
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: POST
+    secureJsonData: {}
+
+  - name: NASA System 7 Server
+    type: prometheus
+    access: proxy
+    url: http://server:3001/metrics
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "30s"
+    secureJsonData: {}

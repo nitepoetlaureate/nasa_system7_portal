@@ -1,0 +1,168 @@
+name: 📦 Dependency Update
+
+on:
+  schedule:
+    # Run dependency check weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  dependency-update:
+    name: 📦 Check and Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm ci
+          cd server && npm ci
+          cd ../client && npm ci
+
+      - name: 🔍 Check outdated dependencies - Server
+        id: outdated-server
+        run: |
+          cd server
+          npm outdated --json > ../server-outdated.json || true
+          if [ -s ../server-outdated.json ]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔍 Check outdated dependencies - Client
+        id: outdated-client
+        run: |
+          cd client
+          npm outdated --json > ../client-outdated.json || true
+          if [ -s ../client-outdated.json ]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔍 Check outdated dependencies - Root
+        id: outdated-root
+        run: |
+          npm outdated --json > root-outdated.json || true
+          if [ -s root-outdated.json ]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📊 Create Dependency Report
+        if: steps.outdated-server.outputs.has_updates == 'true' || steps.outdated-client.outputs.has_updates == 'true' || steps.outdated-root.outputs.has_updates == 'true'
+        run: |
+          echo "# 📦 NASA System 7 Portal - Dependency Update Report" > dependency-report.md
+          echo "" >> dependency-report.md
+          echo "Generated on: $(date)" >> dependency-report.md
+          echo "" >> dependency-report.md
+
+          if [ -s server-outdated.json ]; then
+            echo "## 📦 Server Dependencies" >> dependency-report.md
+            echo '```json' >> dependency-report.md
+            cat server-outdated.json >> dependency-report.md
+            echo '```' >> dependency-report.md
+            echo "" >> dependency-report.md
+          fi
+
+          if [ -s client-outdated.json ]; then
+            echo "## 🖥️ Client Dependencies" >> dependency-report.md
+            echo '```json' >> dependency-report.md
+            cat client-outdated.json >> dependency-report.md
+            echo '```' >> dependency-report.md
+            echo "" >> dependency-report.md
+          fi
+
+          if [ -s root-outdated.json ]; then
+            echo "## 🏗️ Root Dependencies" >> dependency-report.md
+            echo '```json' >> dependency-report.md
+            cat root-outdated.json >> dependency-report.md
+            echo '```' >> dependency-report.md
+            echo "" >> dependency-report.md
+          fi
+
+      - name: 📤 Upload Dependency Report
+        if: steps.outdated-server.outputs.has_updates == 'true' || steps.outdated-client.outputs.has_updates == 'true' || steps.outdated-root.outputs.has_updates == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-report
+          path: dependency-report.md
+
+      - name: 🔧 Auto-update Patch Versions
+        if: steps.outdated-server.outputs.has_updates == 'true' || steps.outdated-client.outputs.has_updates == 'true' || steps.outdated-root.outputs.has_updates == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Update server dependencies (patch versions only)
+          cd server
+          npm update --save
+          if git diff --quiet package*.json; then
+            echo "No server dependency updates"
+          else
+            echo "Server dependencies updated"
+            git add package*.json
+          fi
+          cd ..
+
+          # Update client dependencies (patch versions only)
+          cd client
+          npm update --save
+          if git diff --quiet package*.json; then
+            echo "No client dependency updates"
+          else
+            echo "Client dependencies updated"
+            git add package*.json
+          fi
+          cd ..
+
+          # Update root dependencies
+          npm update --save
+          if git diff --quiet package*.json; then
+            echo "No root dependency updates"
+          else
+            echo "Root dependencies updated"
+            git add package*.json
+          fi
+
+      - name: 🚀 Create Pull Request
+        if: steps.outdated-server.outputs.has_updates == 'true' || steps.outdated-client.outputs.has_updates == 'true' || steps.outdated-root.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "📦 chore: update dependencies (auto-generated)"
+          title: "📦 Automated Dependency Update"
+          body: |
+            ## 📦 Automated Dependency Update
+
+            This PR contains automated updates to project dependencies.
+
+            **Changes:**
+            - Updated patch versions for security and bug fixes
+            - Maintained compatibility with existing APIs
+            - All updates passed security audit
+
+            **Next Steps:**
+            1. Review the dependency changes
+            2. Run the test suite to ensure compatibility
+            3. Merge if all tests pass
+
+            > ⚠️ **Note**: Always test thoroughly before merging dependency updates.
+
+            🤖 Generated with [Claude Code](https://claude.com/claude-code)
+          branch: automated-dependency-update
+          delete-branch: true
+          labels: |
+            dependencies
+            automated

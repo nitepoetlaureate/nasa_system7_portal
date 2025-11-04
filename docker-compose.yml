@@ -1,0 +1,223 @@
+# NASA System 7 Portal - Docker Compose Configuration
+# Development, testing, and production environments
+
+version: '3.8'
+
+services:
+  # ===== Database Service =====
+  postgres:
+    image: postgres:15-alpine
+    container_name: nasa_system7_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-nasa_system7}
+      POSTGRES_USER: ${DB_USER:-nasa_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nasa_secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - nasa_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-nasa_user} -d ${DB_NAME:-nasa_system7}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===== Redis Cache Service =====
+  redis:
+    image: redis:7-alpine
+    container_name: nasa_system7_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_secure_password}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - nasa_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ===== Server Backend =====
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: nasa_system7_server
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-nasa_system7}
+      DB_USER: ${DB_USER:-nasa_user}
+      DB_PASSWORD: ${DB_PASSWORD:-nasa_secure_password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_secure_password}
+      NASA_API_KEY: ${NASA_API_KEY}
+      JPL_API_KEY: ${JPL_API_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - server_logs:/app/logs
+    ports:
+      - "3001:3001"
+    networks:
+      - nasa_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ===== Client Frontend =====
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: nasa_system7_client
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+      REACT_APP_ENVIRONMENT: ${NODE_ENV:-development}
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "3000:80"
+    networks:
+      - nasa_network
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ===== Monitoring Services =====
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nasa_system7_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - nasa_network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nasa_system7_grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3002:3000"
+    networks:
+      - nasa_network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ===== Testing Services =====
+  test-runner:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: nasa_system7_test_runner
+    environment:
+      NODE_ENV: test
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: nasa_system7_test
+      DB_USER: ${DB_USER:-nasa_user}
+      DB_PASSWORD: ${DB_PASSWORD:-nasa_secure_password}
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - test_reports:/app/reports
+    networks:
+      - nasa_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - testing
+    command: ["npm", "run", "test:ci"]
+
+  cypress-runner:
+    build:
+      context: ./client
+      dockerfile: cypress/Dockerfile
+    container_name: nasa_system7_cypress
+    environment:
+      CYPRESS_baseUrl: http://client:80
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - cypress_videos:/app/cypress/videos
+      - cypress_screenshots:/app/cypress/screenshots
+    networks:
+      - nasa_network
+    depends_on:
+      - client
+      - server
+    profiles:
+      - testing
+    command: ["npx", "cypress", "run", "--headless"]
+
+# ===== Networks =====
+networks:
+  nasa_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ===== Volumes =====
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  server_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  test_reports:
+    driver: local
+  cypress_videos:
+    driver: local
+  cypress_screenshots:
+    driver: local
