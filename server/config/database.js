@@ -8,6 +8,14 @@ class DatabaseManager {
   }
 
   async connect() {
+    // CRITICAL FIX: Skip database connections if disabled
+    if (process.env.DISABLE_DATABASE_CONNECTIONS === 'true') {
+      console.log('🔧 Database connections disabled - running in fallback mode');
+      this.fallbackMode = true;
+      this.isConnected = false;
+      return true;
+    }
+
     try {
       this.pool = new Pool({
         user: process.env.DB_USER || 'postgres',

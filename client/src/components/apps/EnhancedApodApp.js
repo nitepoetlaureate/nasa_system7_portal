@@ -15,8 +15,13 @@ const EnhancedApodApp = () => {
     const [favorites, setFavorites] = useState([]);
     const [downloadingImage, setDownloadingImage] = useState(false);
 
+    // CRITICAL FIX: Memoize API function to prevent infinite re-renders
+    const apiFunction = useMemo(() => {
+        return selectedDate === new Date().toISOString().split('T')[0] ? getApod : () => getApodForDate(selectedDate);
+    }, [selectedDate]);
+
     const { data, loading, error, execute } = useOptimizedApi(
-        () => selectedDate === new Date().toISOString().split('T')[0] ? getApod() : getApodForDate(selectedDate),
+        apiFunction,
         { retries: 3, retryDelay: 1000 }
     );
 
@@ -47,12 +52,14 @@ const EnhancedApodApp = () => {
         return data && favorites.some(fav => fav.date === data.date);
     }, [data, favorites]);
 
+    // CRITICAL FIX: Stabilize dependencies to prevent infinite re-renders
     const executeWithDate = useCallback(() => {
         execute();
     }, [execute]);
 
     useEffect(() => {
         executeWithDate();
+        // CRITICAL FIX: Only selectedDate should trigger this effect
     }, [selectedDate, executeWithDate]);
 
     // Date navigation

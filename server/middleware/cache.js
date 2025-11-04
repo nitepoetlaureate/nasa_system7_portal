@@ -11,6 +11,14 @@ class RedisCache {
   }
 
   async connect() {
+    // CRITICAL FIX: Skip cache connections if disabled
+    if (process.env.DISABLE_CACHE_CONNECTION === 'true') {
+      console.log('🔧 Cache connections disabled - running without caching');
+      this.isConnected = false;
+      this.client = null;
+      return;
+    }
+
     try {
       // Redis v4+ configuration
       const config = {

@@ -11,9 +11,10 @@ const ApodApp = () => {
     });
     const { openApp } = useApps();
 
+    // CRITICAL FIX: Add empty dependency array to prevent infinite re-renders
     React.useEffect(() => {
         execute();
-    }, [execute]);
+    }, []); // Only run once on mount
 
     if (loading) {
         return (

@@ -113,6 +113,13 @@ app.listen(PORT, async () => {
   console.log(`🔒 Security middleware active`);
   console.log(`🗜️  Compression enabled`);
 
+  // CRITICAL FIX: Skip initialization if disabled
+  if (process.env.ENABLE_FALLBACK_MODE === 'true') {
+    console.log('🔧 Running in fallback mode - skipping external connections');
+    console.log('✅ NASA System 7 Portal Backend started successfully (fallback mode)');
+    return;
+  }
+
   // Initialize services with error handling
   try {
     console.log('🔄 Initializing database connection...');
