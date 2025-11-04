@@ -23,7 +23,7 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https://api.nasa.gov", "https://images.nasa.gov"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "https.api.nasa.gov"] // Corrected to allow https
+      connectSrc: ["'self'", "https://api.nasa.gov"]
     }
   }
 }));
@@ -66,7 +66,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // API routes
 app.use('/api/nasa', apiProxyRouter);
-// app.use('/api/resources', resourceNavigatorRouter); // <-- THIS LINE IS DISABLED TO FIX THE 404 ROUTE COLLISION
+app.use('/api/resources', resourceNavigatorRouter);
 app.use('/api/apod', apodEnhancedRouter);
 app.use('/api/neo', neoEnhancedRouter);
 app.use('/api/resources', resourceEnhancedRouter);

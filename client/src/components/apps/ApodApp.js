@@ -1,20 +1,14 @@
 import React, { memo } from 'react';
-import { useOptimizedApi } from '../../hooks/usePerformanceOptimized';
+// FIX: Import the simple, reliable useApi hook
+import useApi from '../../hooks/useApi';
 import { getApod } from '../../services/api';
 import { useApps } from '../../contexts/AppContext';
 import OptimizedImage from '../Performance/OptimizedImage';
 
 const ApodApp = () => {
-    const { data, loading, error, execute } = useOptimizedApi(getApod, {
-        retries: 3,
-        retryDelay: 1000
-    });
+    // FIX: Use the simple useApi hook. It runs automatically on mount.
+    const { data, loading, error } = useApi(getApod, []);
     const { openApp } = useApps();
-
-    // CRITICAL FIX: Add empty dependency array to prevent infinite re-renders
-    React.useEffect(() => {
-        execute();
-    }, []); // Only run once on mount
 
     if (loading) {
         return (
@@ -31,13 +25,9 @@ const ApodApp = () => {
         return (
             <div className="font-geneva text-sm text-black p-2 flex items-center justify-center h-full">
                 <div className="text-center">
-                    <p className="mb-2">Error: {error.message}</p>
-                    <button
-                        onClick={() => execute()}
-                        className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                    >
-                        Retry
-                    </button>
+                    {/* FIX: Simplified error display */}
+                    <p className="mb-2 text-red-600">Error: {error.message}</p>
+                    <p className="text-xs">Could not load APOD data.</p>
                 </div>
             </div>
         );
@@ -82,7 +72,7 @@ const ApodApp = () => {
                 {data.copyright && (
                     <p className="mt-2 text-xs text-gray-500">
                         © {data.copyright}
-                    </p>
+                    </DABIGFIX.sh
                 )}
             </div>
 

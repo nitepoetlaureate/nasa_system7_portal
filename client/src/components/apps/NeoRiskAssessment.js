@@ -3,41 +3,9 @@ import React, { useState, useMemo } from 'react';
 const NeoRiskAssessment = ({ neoData, detailData }) => {
     const [activeTab, setActiveTab] = useState('overview'); // overview, torino, impact, probability
 
-    // Calculate enhanced risk metrics
-    const riskMetrics = useMemo(() => {
-        if (!neoData) return null;
-
-        const missDistance = parseFloat(neoData.close_approach_data[0].miss_distance.kilometers);
-        const velocity = parseFloat(neoData.close_approach_data[0].relative_velocity.kilometers_per_second);
-        const diameter = neoData.estimated_diameter.meters.estimated_diameter_max;
-        const isHazardous = neoData.is_potentially_hazardous_asteroid;
-
-        // Kinetic energy calculation (simplified)
-        const density = 2700; // kg/m³ (typical asteroid density)
-        const volume = (4/3) * Math.PI * Math.pow(diameter/2, 3);
-        const mass = density * volume; // kg
-        const kineticEnergy = 0.5 * mass * Math.pow(velocity * 1000, 2); // Joules
-
-        // Convert to Hiroshima bombs for perspective
-        const hiroshimaEquiv = kineticEnergy / (6.3e13); // 63 TJ per Hiroshima bomb
-
-        // Palermo Scale calculation (simplified)
-        const palermoScale = calculatePalermoScale(missDistance, diameter, isHazardous);
-
-        // Impact probability (simplified statistical model)
-        const impactProbability = calculateImpactProbability(missDistance, diameter, isHazardous);
-
-        return {
-            kineticEnergy,
-            hiroshimaEquiv,
-            palermoScale,
-            impactProbability,
-            mass,
-            energyCategory: categorizeEnergy(kineticEnergy),
-            damageRadius: calculateDamageRadius(diameter, velocity),
-            atmosphericEntry: calculateAtmosphericEntry(diameter, velocity)
-        };
-    }, [neoData]);
+    // ========================================================================
+    // --- FIX: All helper functions are moved here, BEFORE useMemo ---
+    // ========================================================================
 
     const calculatePalermoScale = (missDistance, diameter, isHazardous) => {
         // Simplified Palermo Scale calculation
@@ -94,6 +62,48 @@ const NeoRiskAssessment = ({ neoData, detailData }) => {
             return 'Will reach ground with substantial energy';
         }
     };
+
+    // ========================================================================
+    // --- End of Fix ---
+    // ========================================================================
+
+
+    // Calculate enhanced risk metrics
+    const riskMetrics = useMemo(() => {
+        if (!neoData) return null;
+
+        const missDistance = parseFloat(neoData.close_approach_data[0].miss_distance.kilometers);
+        const velocity = parseFloat(neoData.close_approach_data[0].relative_velocity.kilometers_per_second);
+        const diameter = neoData.estimated_diameter.meters.estimated_diameter_max;
+        const isHazardous = neoData.is_potentially_hazardous_asteroid;
+
+        // Kinetic energy calculation (simplified)
+        const density = 2700; // kg/m³ (typical asteroid density)
+        const volume = (4/3) * Math.PI * Math.pow(diameter/2, 3);
+        const mass = density * volume; // kg
+        const kineticEnergy = 0.5 * mass * Math.pow(velocity * 1000, 2); // Joules
+
+        // Convert to Hiroshima bombs for perspective
+        const hiroshimaEquiv = kineticEnergy / (6.3e13); // 63 TJ per Hiroshima bomb
+
+        // Palermo Scale calculation (simplified)
+        const palermoScale = calculatePalermoScale(missDistance, diameter, isHazardous);
+
+        // Impact probability (simplified statistical model)
+        const impactProbability = calculateImpactProbability(missDistance, diameter, isHazardous);
+
+        return {
+            kineticEnergy,
+            hiroshimaEquiv,
+            palermoScale,
+            impactProbability,
+            mass,
+            energyCategory: categorizeEnergy(kineticEnergy),
+            damageRadius: calculateDamageRadius(diameter, velocity),
+            atmosphericEntry: calculateAtmosphericEntry(diameter, velocity)
+        };
+    }, [neoData]);
+
 
     const getTorinoColor = (level) => {
         const colors = {
