@@ -1,50 +1,24 @@
-const { Pool } = require('pg');
+const { db, initDatabase } = require('./config/database');
 
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_DATABASE || 'nasa_resources',
-    password: process.env.DB_PASSWORD || 'carlotta', // Your password
-    port: process.env.DB_PORT || 5432,
-});
-
+// Legacy compatibility wrapper
 const initDb = async () => {
-    const client = await pool.connect();
-    console.log('Initializing database schema...');
+    console.log('Initializing optimized database schema...');
     try {
-        await client.query('BEGIN');
-        await client.query('DROP TABLE IF EXISTS datasets, software, saved_items, saved_searches CASCADE;');
-        await client.query(`
-            CREATE TABLE saved_items (
-                id TEXT PRIMARY KEY,
-                type TEXT NOT NULL,
-                title TEXT NOT NULL,
-                url TEXT,
-                category TEXT,
-                description TEXT,
-                saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        await client.query(`
-            CREATE TABLE saved_searches (
-                id SERIAL PRIMARY KEY,
-                query_string TEXT NOT NULL,
-                search_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        await client.query('COMMIT');
-        console.log('✅ Database schema initialized successfully.');
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('❌ Database initialization failed:', err);
+        await initDatabase();
+        console.log('✅ Database schema initialized successfully with optimizations.');
+    } catch (error) {
+        console.error('❌ Database initialization failed:', error);
         process.exit(1);
-    } finally {
-        client.release();
-        pool.end(); // End pool after script runs
     }
 };
 
+// Initialize database connection
+db.connect().catch(console.error);
+
 module.exports = {
-    query: (text, params) => pool.query(text, params),
+    query: (text, params) => db.query(text, params),
+    transaction: (callback) => db.transaction(callback),
     initDb,
+    db,
+    getPoolStats: () => db.getPoolStats()
 };

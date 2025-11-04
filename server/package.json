@@ -12,7 +12,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "performance:test": "node scripts/performanceTest.js",
+    "performance:load": "node scripts/performanceTest.js load",
+    "monitor": "node scripts/performanceMonitor.js"
   },
   "keywords": [
     "nasa",
@@ -36,7 +39,9 @@
     "morgan": "^1.10.0",
     "pg": "^8.11.3",
     "compression": "^1.7.4",
-    "express-validator": "^7.0.1"
+    "express-validator": "^7.0.1",
+    "redis": "^4.6.10",
+    "pg-pool": "^3.6.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",

@@ -15,7 +15,11 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "lodash": "^4.17.21",
+    "react-intersection-observer": "^9.5.3",
+    "react-window": "^1.8.8",
+    "react-virtualized-auto-sizer": "^1.0.20"
   },
   "scripts": {
     "start": "react-scripts start",

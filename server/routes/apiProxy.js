@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const { cacheMiddleware } = require('../middleware/cache');
 const router = express.Router();
 
 const NASA_API_KEY = process.env.NASA_API_KEY;
@@ -36,9 +37,8 @@ const proxyRequest = (baseURL) => async (req, res) => {
     }
 };
 
-// The routes are simplified. The proxy now handles the full path.
-// The base path is /api/nasa, so any request to /api/nasa/* will be handled.
-router.get('/*', proxyRequest(NASA_API_URL));
+// Apply caching middleware to all NASA API requests
+router.get('/*', cacheMiddleware('nasa'), proxyRequest(NASA_API_URL));
 
 // Note: A more complex setup would be needed if JPL and NASA had overlapping paths.
 // For our current apps, this is robust.
