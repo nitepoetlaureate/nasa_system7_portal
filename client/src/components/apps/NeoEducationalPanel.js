@@ -69,10 +69,10 @@ const NeoBasicsContent = () => (
                     <span className="font-bold">NEAs (Near-Earth Asteroids):</span> Asteroids with orbits bringing them within 1.3 AU of Earth
                 </div>
                 <div className="text-xs ml-4">
-                    <div>• <span className="font-bold">Atiras:</span> Entirely within Earth's orbit (a < 0.983 AU)</div>
-                    <div>• <span className="font-bold">Atens:</span> Earth-crossing with a < 1.0 AU and Q > 0.983 AU</div>
-                    <div>• <span className="font-bold">Apollos:</span> Earth-crossing with a > 1.0 AU and q < 1.017 AU</div>
-                    <div>• <span className="font-bold">Amors:</span> Earth-approaching with 1.017 < q < 1.3 AU</div>
+                    <div>• <span className="font-bold">Atiras:</span> Entirely within Earth's orbit (a &lt; 0.983 AU)</div>
+                    <div>• <span className="font-bold">Atens:</span> Earth-crossing with a &lt; 1.0 AU and Q &gt; 0.983 AU</div>
+                    <div>• <span className="font-bold">Apollos:</span> Earth-crossing with a &gt; 1.0 AU and q &lt; 1.017 AU</div>
+                    <div>• <span className="font-bold">Amors:</span> Earth-approaching with 1.017 &lt; q &lt; 1.3 AU</div>
                 </div>
             </div>
         </div>
@@ -289,7 +289,7 @@ const ResearchContent = () => (
         </div>
 
         <div>
-            <h4 className="font-bold text-base mb-2Upcoming Missions</h4>
+            <h4 className="font-bold text-base mb-2">Upcoming Missions</h4>
             <div className="space-y-2 ml-4 text-xs">
                 <div><span className="font-bold">2024:</span> Hera (ESA) - DART impact assessment</div>
                 <div><span className="font-bold">2027:</span> Psyche (NASA) - Metal asteroid study</div>

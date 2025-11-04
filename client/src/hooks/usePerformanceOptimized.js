@@ -107,7 +107,7 @@ export const useLazyImage = (src, options = {}) => {
   const [imageSrc, setImageSrc] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { observe, unobserve } = useIntersectionObserver(options);
+  const { entries, observe, unobserve } = useIntersectionObserver(options);
 
   const imgRef = useCallback((node) => {
     if (node) {
@@ -116,7 +116,7 @@ export const useLazyImage = (src, options = {}) => {
   }, [observe]);
 
   useEffect(() => {
-    const visibleEntry = entries.find(entry => entry.isIntersecting);
+    const visibleEntry = entries && entries.find(entry => entry.isIntersecting);
     if (visibleEntry && !imageSrc) {
       const img = new Image();
       img.onload = () => {

@@ -112,5 +112,3 @@ export default memo(Window, (prevProps, nextProps) => {
         JSON.stringify(prevProps.initialPos) === JSON.stringify(nextProps.initialPos)
     );
 });
-
-export default Window;
