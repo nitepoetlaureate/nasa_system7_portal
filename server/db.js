@@ -12,8 +12,10 @@ const initDb = async () => {
     }
 };
 
-// Initialize database connection
-db.connect().catch(console.error);
+// Initialize database connection in background
+db.connect().catch(err => {
+  console.warn('Background database initialization failed:', err.message);
+});
 
 module.exports = {
     query: (text, params) => db.query(text, params),

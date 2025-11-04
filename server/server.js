@@ -107,11 +107,37 @@ app.use('*', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 NASA System 7 Portal Backend listening on port ${PORT}`);
   console.log(`📊 Performance monitoring enabled`);
   console.log(`🔒 Security middleware active`);
   console.log(`🗜️  Compression enabled`);
 
-  fetchFeaturedItem(); // Fetch the featured item when the server starts.
+  // Initialize services with error handling
+  try {
+    console.log('🔄 Initializing database connection...');
+    await require('./config/database').db.connect();
+  } catch (dbError) {
+    console.warn('⚠️  Database initialization failed:', dbError.message);
+    console.log('🔄 Server will continue in limited mode');
+  }
+
+  try {
+    console.log('🔄 Initializing cache connection...');
+    await require('./middleware/cache').cache.connect();
+  } catch (cacheError) {
+    console.warn('⚠️  Cache initialization failed:', cacheError.message);
+    console.log('🔄 Server will continue without caching');
+  }
+
+  // Fetch featured item with error handling
+  try {
+    console.log('🔄 Fetching featured dataset...');
+    await fetchFeaturedItem();
+  } catch (featuredError) {
+    console.warn('⚠️  Featured item fetch failed:', featuredError.message);
+    console.log('🔄 Server will continue without featured item');
+  }
+
+  console.log('✅ NASA System 7 Portal Backend started successfully');
 });

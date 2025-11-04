@@ -1,5 +1,4 @@
 const redis = require('redis');
-const { promisify } = require('util');
 
 class RedisCache {
   constructor() {
@@ -13,27 +12,30 @@ class RedisCache {
 
   async connect() {
     try {
-      this.client = redis.createClient({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-        password: process.env.REDIS_PASSWORD,
-        retry_strategy: (options) => {
-          if (options.error && options.error.code === 'ECONNREFUSED') {
-            console.error('Redis server connection refused');
-            return new Error('Redis server connection refused');
+      // Redis v4+ configuration
+      const config = {
+        socket: {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: process.env.REDIS_PORT || 6379,
+          reconnectStrategy: (retries) => {
+            if (retries > 10) {
+              console.error('Redis reconnection attempts exhausted');
+              return new Error('Redis reconnection attempts exhausted');
+            }
+            return Math.min(retries * 100, 3000);
           }
-          if (options.total_retry_time > 1000 * 60 * 60) {
-            return new Error('Retry time exhausted');
-          }
-          if (options.attempt > 10) {
-            return undefined;
-          }
-          return Math.min(options.attempt * 100, 3000);
         }
-      });
+      };
+
+      // Add password only if it exists
+      if (process.env.REDIS_PASSWORD) {
+        config.password = process.env.REDIS_PASSWORD;
+      }
+
+      this.client = redis.createClient(config);
 
       this.client.on('error', (err) => {
-        console.error('Redis error:', err);
+        console.error('Redis error:', err.message);
         this.isConnected = false;
       });
 
@@ -42,17 +44,21 @@ class RedisCache {
         this.isConnected = true;
       });
 
-      // Promisify Redis methods
-      this.get = promisify(this.client.get).bind(this.client);
-      this.set = promisify(this.client.set).bind(this.client);
-      this.del = promisify(this.client.del).bind(this.client);
-      this.exists = promisify(this.client.exists).bind(this.client);
-      this.flushall = promisify(this.client.flushall).bind(this.client);
+      this.client.on('ready', () => {
+        console.log('Redis client ready');
+        this.isConnected = true;
+      });
+
+      this.client.on('end', () => {
+        console.log('Redis connection ended');
+        this.isConnected = false;
+      });
 
       await this.client.connect();
     } catch (error) {
       console.warn('Redis connection failed, cache disabled:', error.message);
       this.isConnected = false;
+      this.client = null;
     }
   }
 
@@ -71,7 +77,7 @@ class RedisCache {
       const data = await this.client.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error('Cache get error:', error);
+      console.error('Cache get error:', error.message);
       return null;
     }
   }
@@ -81,13 +87,14 @@ class RedisCache {
 
     try {
       const serializedData = JSON.stringify(data);
-      await this.client.set(key, serializedData);
       if (ttl > 0) {
-        await this.client.expire(key, ttl);
+        await this.client.setEx(key, ttl, serializedData);
+      } else {
+        await this.client.set(key, serializedData);
       }
       return true;
     } catch (error) {
-      console.error('Cache set error:', error);
+      console.error('Cache set error:', error.message);
       return false;
     }
   }
@@ -99,7 +106,7 @@ class RedisCache {
       await this.client.del(key);
       return true;
     } catch (error) {
-      console.error('Cache delete error:', error);
+      console.error('Cache delete error:', error.message);
       return false;
     }
   }
@@ -110,11 +117,14 @@ class RedisCache {
     try {
       const keys = await this.client.keys(pattern);
       if (keys.length > 0) {
-        await this.del(keys);
+        // Use a pipeline for better performance
+        const pipeline = this.client.multi();
+        keys.forEach(key => pipeline.del(key));
+        await pipeline.exec();
       }
       return true;
     } catch (error) {
-      console.error('Cache invalidate pattern error:', error);
+      console.error('Cache invalidate pattern error:', error.message);
       return false;
     }
   }
@@ -127,8 +137,13 @@ class RedisCache {
   }
 
   async disconnect() {
-    if (this.client) {
-      await this.client.quit();
+    if (this.client && this.isConnected) {
+      try {
+        await this.client.quit();
+        this.isConnected = false;
+      } catch (error) {
+        console.error('Redis disconnect error:', error.message);
+      }
     }
   }
 }
@@ -138,6 +153,12 @@ const cache = new RedisCache();
 // Cache middleware factory
 const cacheMiddleware = (endpointPrefix) => {
   return async (req, res, next) => {
+    // Skip cache if Redis is not connected
+    if (!cache.isConnected || !cache.client) {
+      res.set('X-Cache', 'DISABLED');
+      return next();
+    }
+
     const cacheKey = cache.generateKey(endpointPrefix, {
       path: req.path,
       query: JSON.stringify(req.query)
@@ -148,7 +169,15 @@ const cacheMiddleware = (endpointPrefix) => {
 
       if (cachedData) {
         res.set('X-Cache', 'HIT');
-        res.set('X-Cache-TTL', await cache.client.ttl(cacheKey));
+        // Only get TTL if Redis is connected and client exists
+        if (cache.isConnected && cache.client) {
+          try {
+            const ttl = await cache.client.ttl(cacheKey);
+            res.set('X-Cache-TTL', ttl.toString());
+          } catch (ttlError) {
+            // Ignore TTL errors, still serve cached content
+          }
+        }
         return res.json(cachedData);
       }
 
@@ -156,14 +185,17 @@ const cacheMiddleware = (endpointPrefix) => {
       const originalJson = res.json;
       res.json = function(data) {
         const ttl = cache.getTTLForEndpoint(req.path);
-        cache.set(cacheKey, data, ttl);
+        cache.set(cacheKey, data, ttl).catch(err => {
+          // Ignore cache errors, don't break the response
+          console.warn('Cache set error:', err.message);
+        });
         res.set('X-Cache', 'MISS');
         return originalJson.call(this, data);
       };
 
       next();
     } catch (error) {
-      console.error('Cache middleware error:', error);
+      console.error('Cache middleware error:', error.message);
       next();
     }
   };
@@ -178,8 +210,10 @@ const invalidateCache = async (patterns) => {
   }
 };
 
-// Initialize cache connection
-cache.connect();
+// Initialize cache connection in background
+cache.connect().catch(err => {
+  console.warn('Background cache initialization failed:', err.message);
+});
 
 module.exports = {
   cache,
