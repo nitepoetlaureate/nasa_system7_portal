@@ -6,10 +6,9 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const apiProxyRouter = require('./routes/apiProxy');
-const { router: resourceNavigatorRouter, fetchFeaturedItem } = require('./routes/resourceNavigator');
 const apodEnhancedRouter = require('./routes/apodEnhanced');
 const neoEnhancedRouter = require('./routes/neoEnhanced');
-const resourceEnhancedRouter = require('./routes/resourceEnhanced');
+const { router: resourceEnhancedRouter, fetchFeaturedItem } = require('./routes/resourceEnhanced');
 const { performanceMiddleware, responseTimeMiddleware } = require('./middleware/performance');
 
 const app = express();
@@ -66,7 +65,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // API routes
 app.use('/api/nasa', apiProxyRouter);
-// app.use('/api/resources', resourceNavigatorRouter); // <-- THIS LINE IS DISABLED TO FIX THE 404 ROUTE COLLISION
 app.use('/api/apod', apodEnhancedRouter);
 app.use('/api/neo', neoEnhancedRouter);
 app.use('/api/resources', resourceEnhancedRouter);
